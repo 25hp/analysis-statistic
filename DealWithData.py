@@ -1,6 +1,7 @@
 import csv
-import DealWithData
+import FileUtil
 
+# TODO:画出peak - valley 的图
 
 class DealWithData(object):
     def __init__(self, csv="", src=[]):
@@ -21,18 +22,18 @@ class DealWithData(object):
         self.timeOfNow = 0
         self.gravityNew = 0
         self.gravityOld = 0
-        self.InitialValue = float(1.3)
-        self.ThreadValue = float(2.0)
-        self.TimeIntervalMin = 6
+        self.InitialValue = float(130)
+        self.ThreadValue = float(200)
+        self.TimeIntervalMin = 7
         self.TimeIntervalMax = 50
         self.step = 0
         self.indexOfLastPeak = 0
-
+        self.selIndex = [0] #for create  threshold matplot
+        self.threshold = [200]
 
     def onSensorChanged(self):
         for i in range(len(self.Src)):
             self.detectorNewStep(self.Src[i], i)
-
 
     def detectorNewStep(self, values, index):
         if self.gravityOld == 0:
@@ -48,10 +49,12 @@ class DealWithData(object):
                                 self.peakOfWave - self.valleyOfWave >= self.InitialValue):
                     self.timeOfThisPeak = self.timeOfNow
                     self.ThreadValue = self.peakValleyThread(self.peakOfWave - self.valleyOfWave)
+                    self.selIndex.append(index)
+                    self.threshold.append(self.ThreadValue)
         if index == len(self.Src) - 1:
-            print("步数:" + str(self.step))
+            print(self.csvName + ",步数:" + str(self.step))
+            FileUtil.createCsv(selIndex=self.selIndex,threshold=self.threshold,csv=self.csvName)
         self.gravityOld = values
-
 
     def detectorPeak(self, newValue, oldValue):
         self.lastStatus = self.isDirectionUp
@@ -71,7 +74,6 @@ class DealWithData(object):
         else:
             return False
 
-
     def peakValleyThread(self, value):
         self.tempThread = self.ThreadValue
         if self.tempCount < self.ValueNum:
@@ -85,24 +87,22 @@ class DealWithData(object):
             self.tempValue[self.ValueNum - 1] = value
         return self.tempThread
 
-
     def averageValue(self, values, n):
         ave = 0
         for index in range(len(values)):
             ave += values[index]
         ave = ave / self.ValueNum
-        if ave >= 8:
-            ave = 4.3
-        elif ave >= 7 and ave < 8:
-            ave = 3.3
-        elif ave >= 4 and ave < 7:
-            ave = 2.3
-        elif ave >= 3 and ave < 4:
-            ave = 2.0
+        if ave >= 800:
+            ave = 430
+        elif ave >= 700 and ave < 800:
+            ave = 330
+        elif ave >= 400 and ave < 700:
+            ave = 230
+        elif ave >= 300 and ave < 400:
+            ave = 200
         else:
-            ave = 1.3
+            ave = 130
         return ave
-
 
     def countStep(self, index):
         if self.step < 9:
@@ -115,13 +115,13 @@ class DealWithData(object):
 
 
 if __name__ == '__main__':
-    dir = "data/"
-    cvsname = "cd_slow150.csv"
-    columnG = []
-    with open(dir + cvsname, newline='') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            columnG.append(int(row['G']) / 100)
-    print(columnG)
-    sd = DealWithData(csv=cvsname, src=columnG)
-    sd.onSensorChanged()
+    dirPath= "data/"
+    listCsv = FileUtil.getCsvFile(dirPath)
+    for i in range(len(listCsv)):
+        columnG = []
+        with open(dirPath + listCsv[i], newline='') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                columnG.append(int(row['G']))
+        sd = DealWithData(csv=listCsv[i], src=columnG)
+        sd.onSensorChanged()
