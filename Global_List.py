@@ -1,0 +1,3 @@
+DIFF_KEY = "DIFF_KEY"
+DIFF_VALUE = "DIFF_VALUE"
+G_DIR_PATH = "g-data/"

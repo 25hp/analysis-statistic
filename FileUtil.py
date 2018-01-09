@@ -1,6 +1,7 @@
 from os import walk
 import pandas as pd
 import csv
+import Global_List as gl
 
 
 def getCsvFile(path):
@@ -16,19 +17,18 @@ def getCsvFile(path):
     return ret
 
 
-def readGcolum(csvname=""):
+def readColum(csvname="", colum="G"):
     with open("data/" + csvname, newline='') as f:
         reader = csv.DictReader(f)
         columnG = []
         for row in reader:
-            columnG.append(row['G'])
+            columnG.append(int(row[colum]))
     return columnG
 
 
-def createCsv(selIndex=[], threshold=[], csv=""):
+def addTh2Csv(selIndex=[], threshold=[], csv=""):
     thresholdColum = []
-    gColum = readGcolum(csv)
-    print(gColum)
+    gColum = readColum(csv)
     gLen = len(gColum)
     selLen = len(selIndex)
     thLen = len(threshold)
@@ -42,8 +42,29 @@ def createCsv(selIndex=[], threshold=[], csv=""):
     for x in range(gLen - selIndex[selLen - 1]):
         thresholdColum.append(threshold[thLen - 1])
     dataframe = pd.DataFrame({'G': gColum, 'T': thresholdColum})
-    dataframe.to_csv("g-data/" + csv, index=False, sep=',')
+    dataframe.to_csv(gl.G_DIR_PATH + csv, index=False, sep=',')
 
+
+def addDiff2Csv(dicList, csv):
+    data = pd.read_csv(gl.G_DIR_PATH + csv)
+    data['D'] = 0
+    columnD = list(data['D'])
+    for i in range(len(dicList)):
+        columnD[dicList[i][gl.DIFF_KEY]] = dicList[i][gl.DIFF_VALUE]
+    data['D'] = columnD
+    df = pd.DataFrame(data, columns=['G', 'T', 'D'])
+    df.to_csv(gl.G_DIR_PATH + csv, index=False, sep=',')
+
+def addSd2Csv(dicList, csv):
+    data = pd.read_csv(gl.G_DIR_PATH + csv)
+    data['S'] = 0
+    columnS = list(data['S'])
+    columnG = list(data['G'])
+    for i in range(len(dicList)):
+        columnS[dicList[i]] =  columnG[dicList[i]]
+    data['S'] = columnS
+    df = pd.DataFrame(data, columns=['G', 'T', 'D','S'])
+    df.to_csv(gl.G_DIR_PATH + csv, index=False, sep=',')
 
 if __name__ == '__main__':
     # getCsvFile("data/")
@@ -51,4 +72,4 @@ if __name__ == '__main__':
     # b = [4, 5, 6]
     # dataframe = pd.DataFrame({'a_name': a, 'b_name': b})
     # dataframe.to_csv("g-data/test.csv", index=False, sep=',')
-    createCsv(csv="cd_slow150.csv")
+    addTh2Csv(csv="cd_slow150.csv")

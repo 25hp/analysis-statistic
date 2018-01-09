@@ -1,5 +1,6 @@
-import csv
 import FileUtil
+import Global_List
+
 
 # TODO:画出peak - valley 的图
 
@@ -15,8 +16,8 @@ class DealWithData(object):
         self.continueUpCount = 0
         self.continueUpFormerCount = 0
         self.lastStatus = False
-        self.peakOfWave = 0
-        self.valleyOfWave = 0
+        self.peakOfWave = float(0)
+        self.valleyOfWave = float(0)
         self.timeOfThisPeak = 0
         self.timeOfLastPeak = 0
         self.timeOfNow = 0
@@ -24,12 +25,18 @@ class DealWithData(object):
         self.gravityOld = 0
         self.InitialValue = float(130)
         self.ThreadValue = float(200)
-        self.TimeIntervalMin = 7
-        self.TimeIntervalMax = 50
+        self.TimeIntervalMin = float(6)
+        self.TimeIntervalMax = float(50)
         self.step = 0
         self.indexOfLastPeak = 0
-        self.selIndex = [0] #for create  threshold matplot
+        self.selIndex = [0]  # for create  threshold matplot
         self.threshold = [200]
+        self.DiffPV = []
+        self.StepDot = []
+        self.startCountFlag = True
+
+    def createDiffDict(self, keyValue, valueValue):
+        return {Global_List.DIFF_KEY: keyValue, Global_List.DIFF_VALUE: valueValue}
 
     def onSensorChanged(self):
         for i in range(len(self.Src)):
@@ -42,9 +49,11 @@ class DealWithData(object):
             if self.detectorPeak(values, self.gravityOld):
                 self.timeOfLastPeak = self.timeOfThisPeak
                 self.timeOfNow = index
+                self.DiffPV.append(self.createDiffDict(index, self.peakOfWave - self.valleyOfWave))
                 if self.timeOfNow - self.timeOfLastPeak >= self.TimeIntervalMin and self.peakOfWave - self.valleyOfWave >= self.ThreadValue:
                     self.timeOfThisPeak = self.timeOfNow
                     self.countStep(index)
+                    self.StepDot.append(index - 1)
                 if self.timeOfNow - self.timeOfLastPeak >= self.TimeIntervalMin and (
                                 self.peakOfWave - self.valleyOfWave >= self.InitialValue):
                     self.timeOfThisPeak = self.timeOfNow
@@ -53,7 +62,9 @@ class DealWithData(object):
                     self.threshold.append(self.ThreadValue)
         if index == len(self.Src) - 1:
             print(self.csvName + ",步数:" + str(self.step))
-            FileUtil.createCsv(selIndex=self.selIndex,threshold=self.threshold,csv=self.csvName)
+            FileUtil.addTh2Csv(selIndex=self.selIndex, threshold=self.threshold, csv=self.csvName)
+            FileUtil.addDiff2Csv(dicList=self.DiffPV, csv=self.csvName)
+            FileUtil.addSd2Csv(dicList=self.StepDot, csv=self.csvName)
         self.gravityOld = values
 
     def detectorPeak(self, newValue, oldValue):
@@ -65,7 +76,7 @@ class DealWithData(object):
             self.continueUpFormerCount = self.continueUpCount
             self.continueUpCount = 0
             self.isDirectionUp = False
-        if not self.isDirectionUp and self.lastStatus and (self.continueUpFormerCount >= 2 or oldValue >= 20):
+        if not self.isDirectionUp and self.lastStatus and (self.continueUpFormerCount >= 2 or oldValue >= 980):
             self.peakOfWave = oldValue
             return True
         elif not self.lastStatus and self.isDirectionUp:
@@ -89,9 +100,9 @@ class DealWithData(object):
 
     def averageValue(self, values, n):
         ave = 0
-        for index in range(len(values)):
+        for index in range(n):
             ave += values[index]
-        ave = ave / self.ValueNum
+        ave = float(ave / self.ValueNum)
         if ave >= 800:
             ave = 430
         elif ave >= 700 and ave < 800:
@@ -105,23 +116,21 @@ class DealWithData(object):
         return ave
 
     def countStep(self, index):
-        if self.step < 9:
-            self.step += 1
-        elif self.step == 9:
-            self.step += 1
+        if index - self.indexOfLastPeak <= 80 or self.startCountFlag:
+            if self.step < 9:
+                self.step += 1
+            elif self.step == 9:
+                self.step += 1
+            else:
+                self.step += 1
         else:
-            self.step += 1
-            # TODO:判断小于9步的
+            self.startCountFlag = True
+            self.step = 0
 
 
 if __name__ == '__main__':
-    dirPath= "data/"
+    dirPath = "data/"
     listCsv = FileUtil.getCsvFile(dirPath)
     for i in range(len(listCsv)):
-        columnG = []
-        with open(dirPath + listCsv[i], newline='') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                columnG.append(int(row['G']))
-        sd = DealWithData(csv=listCsv[i], src=columnG)
+        sd = DealWithData(csv=listCsv[i], src=FileUtil.readColum(listCsv[i]))
         sd.onSensorChanged()
