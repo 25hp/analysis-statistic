@@ -21,7 +21,6 @@ plt.scatter(x, columnG, c='r', marker='.')
 plt.plot(x, columnG, color='r', linewidth=0.5, linestyle='-', label='G')
 plt.scatter(x, columnT, c='k', marker='.')
 plt.plot(x, columnT, color='k', linewidth=0.5, linestyle='-', label='T')
-
 plt.scatter(x, columnD, facecolor='m', edgecolor='white',label='D')
 plt.scatter(x, columnS, facecolor='b', edgecolor='white',label='S')
 

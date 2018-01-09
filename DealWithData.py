@@ -131,6 +131,8 @@ class DealWithData(object):
 if __name__ == '__main__':
     dirPath = "data/"
     listCsv = FileUtil.getCsvFile(dirPath)
+    listCalStep = []
     for i in range(len(listCsv)):
         sd = DealWithData(csv=listCsv[i], src=FileUtil.readColum(listCsv[i]))
         sd.onSensorChanged()
+        listCalStep.append(sd.step)

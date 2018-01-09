@@ -66,6 +66,11 @@ def addSd2Csv(dicList, csv):
     df = pd.DataFrame(data, columns=['G', 'T', 'D','S'])
     df.to_csv(gl.G_DIR_PATH + csv, index=False, sep=',')
 
+
+def writeTrueAndCalCvs(lsitData = []):
+    get
+
+
 if __name__ == '__main__':
     # getCsvFile("data/")
     # a = [1, 2, 3]
