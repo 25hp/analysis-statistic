@@ -1,5 +1,5 @@
 import FileUtil
-import Global_List
+import Global_List as gl
 
 
 # TODO:画出peak - valley 的图
@@ -36,7 +36,7 @@ class DealWithData(object):
         self.startCountFlag = True
 
     def createDiffDict(self, keyValue, valueValue):
-        return {Global_List.DIFF_KEY: keyValue, Global_List.DIFF_VALUE: valueValue}
+        return {gl.DIFF_KEY: keyValue, gl.DIFF_VALUE: valueValue}
 
     def onSensorChanged(self):
         for i in range(len(self.Src)):
@@ -131,8 +131,10 @@ class DealWithData(object):
 if __name__ == '__main__':
     dirPath = "data/"
     listCsv = FileUtil.getCsvFile(dirPath)
-    listCalStep = []
+    listSummary = []
     for i in range(len(listCsv)):
         sd = DealWithData(csv=listCsv[i], src=FileUtil.readColum(listCsv[i]))
         sd.onSensorChanged()
-        listCalStep.append(sd.step)
+        listSummary.append(
+            {gl.SK_File: listCsv[i].split('.')[0], gl.SK_A: FileUtil.getActualStep(listCsv[i]), gl.SK_C: sd.step})
+    FileUtil.saveSummary(listSummary)

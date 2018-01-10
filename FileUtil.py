@@ -1,7 +1,9 @@
 from os import walk
 import pandas as pd
 import csv
+import re
 import Global_List as gl
+import pickle as pk
 
 
 def getCsvFile(path):
@@ -13,7 +15,6 @@ def getCsvFile(path):
     for i in range(len(f)):
         if str(f[i]).__contains__(".csv"):
             ret.append(f[i])
-    print(ret)
     return ret
 
 
@@ -55,20 +56,35 @@ def addDiff2Csv(dicList, csv):
     df = pd.DataFrame(data, columns=['G', 'T', 'D'])
     df.to_csv(gl.G_DIR_PATH + csv, index=False, sep=',')
 
+
 def addSd2Csv(dicList, csv):
     data = pd.read_csv(gl.G_DIR_PATH + csv)
     data['S'] = 0
     columnS = list(data['S'])
     columnG = list(data['G'])
     for i in range(len(dicList)):
-        columnS[dicList[i]] =  columnG[dicList[i]]
+        columnS[dicList[i]] = columnG[dicList[i]]
     data['S'] = columnS
-    df = pd.DataFrame(data, columns=['G', 'T', 'D','S'])
+    df = pd.DataFrame(data, columns=['G', 'T', 'D', 'S'])
     df.to_csv(gl.G_DIR_PATH + csv, index=False, sep=',')
 
 
-def writeTrueAndCalCvs(lsitData = []):
-    get
+def saveSummary(data):
+    path = gl.G_DIR_PATH + gl.SUMMARY_CSV
+    with open(path, 'wb') as f:
+        pk.dump(data, f, -1)
+
+
+def readSummary():
+    path = gl.G_DIR_PATH + gl.SUMMARY_CSV
+    with open(path, 'rb') as f:
+        data = pk.load(f)
+    return data
+
+
+def getActualStep(name):
+    item = re.sub("\D", "", name)
+    return int(item)
 
 
 if __name__ == '__main__':
@@ -77,4 +93,13 @@ if __name__ == '__main__':
     # b = [4, 5, 6]
     # dataframe = pd.DataFrame({'a_name': a, 'b_name': b})
     # dataframe.to_csv("g-data/test.csv", index=False, sep=',')
-    addTh2Csv(csv="cd_slow150.csv")
+    # addTh2Csv(csv="cd_slow150.csv")
+    data1 = [{'file': "a.csv",
+              'actual': 500,
+              'calculate': 504},
+             {'file': "b.csv",
+              'actual': 5001,
+              'calculate': 5024}
+             ]
+    saveSummary(data=data1)
+    print(readSummary())

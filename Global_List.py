@@ -4,4 +4,7 @@ G_DIR_PATH = "g-data/"
 FILE_NAME = "FILE_NAME"
 TRUE_STEP = "TRUE_STEP"
 CAL_STEP = "CAL_STEP"
-
+SUMMARY_CSV = "summary.pkl"
+SK_File = "file"
+SK_A = "actual"
+SK_C = "calculate"

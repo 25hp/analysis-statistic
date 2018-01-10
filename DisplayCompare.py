@@ -1,29 +1,40 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import re
 import FileUtil as fu
 import Global_List as gl
+import FileUtil
 
-listFile = fu.getCsvFile(gl.G_DIR_PATH)
-listData = []
-for i in range(len(listFile)):
-    file = listFile[i]
-    item = re.sub("\D", "", file)
-    listData.append(int(item))
+summaryData = FileUtil.readSummary()
+print(summaryData)
+listname = []
+listactual = []
+listcalculate = []
+for i in summaryData:
+    listname.append(i[gl.SK_File])
+    listactual.append(i[gl.SK_A])
+    listcalculate.append(i[gl.SK_C])
 
-# data_week2015 = pd.read_csv('data_week2015.txt')['nums'].T.values
-# data_week2016 = pd.read_csv('data_week2016.txt')['nums'].T.values
-# plt.figure(figsize=(10, 6))
-# xweek = range(0, len(data_week2015))
-# xweek1 = [i + 0.3 for i in xweek]
-# plt.bar(xweek, data_week2015, color='g', width=.3, alpha=0.6, label='2015年')
-# plt.bar(xweek1, data_week2016, color='r', width=.3, alpha=0.4, label='2016年')
-# plt.xlabel('文件名')
-# plt.ylabel('步数')
-# plt.title('步数比较图')
-x = np.linspace(0, 4 * len(listFile), len(listFile))
-plt.bar(x, listData, color='g', width=1, alpha=0.6, label='True Steps')
-plt.xticks(x, listFile)
+plt.figure(figsize=(18, 8))
+x = np.linspace(0, 5 * len(listname), len(listname))
+x1 = np.linspace(0, 5 * len(listname), len(listname))
+plt.bar(x1, listactual, color='g', width=2, alpha=0.6, label='Actual Steps')
+plt.bar(x + 2, listcalculate, color='r', width=2, alpha=0.4, label='Calculate Steps')
+plt.xticks(x, listname, fontsize=7)
+for x, y in zip(x1, np.array(listactual)):
+    # ha: horizontal alignment
+    # va: vertical alignment
+    plt.text(x + 0.4, y + 0.05, '%d' % y, ha='center', va='bottom')
+
+
+for x2, y2 in zip(x1, np.array(listcalculate)):
+    # ha: horizontal alignment
+    # va: vertical alignment
+    plt.text(x2 + 2.4, y2 + 0.05, '%d' % y2, ha='center', va='bottom')
+
+plt.subplots_adjust(left=0.02, right=0.98, top=0.95, bottom=0.1)
 plt.legend(loc='upper right')
+plt.xlabel('FileName')
+plt.ylabel('Steps')
+plt.title('Compare')
 plt.show()
