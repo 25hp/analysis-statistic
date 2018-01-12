@@ -1,3 +1,5 @@
+import math
+
 import FileUtil
 import Global_List as gl
 
@@ -34,6 +36,39 @@ class DealWithData(object):
         self.DiffPV = []
         self.StepDot = []
         self.startCountFlag = True
+        # 方差 20180112
+        self.peakNum = 5
+        self.peakArray = []  # 波峰值
+        self.peakArrCount = 0
+        self.peakVar = 100  # 波峰方差
+        self.peakVarArr = []
+        self.peakAvage = 0
+        self.peakAvageArrDisplay = []
+        self.peakVarArrDisplay = []
+
+    def saveGpeakArray(self, value):
+        if self.peakArrCount < self.peakNum:
+            self.peakArray.append(value)
+            self.peakArrCount += 1
+        else:
+            for i in range(self.peakNum):
+                self.peakArray[i - 1] = self.peakArray[i]
+                self.peakArray[self.peakNum - 1] = value
+
+    def getPeakVar(self):
+        ret = 100
+        sum = 0
+        if self.peakArrCount == self.peakNum:
+            for i in range(self.peakNum):
+                sum += self.peakArray[i]
+                self.peakAvage = sum / self.peakNum
+            if self.peakAvage != 0:
+                sum = 0
+                for i in range(self.peakNum):
+                    sum += math.pow((self.peakArray[i] - self.peakAvage), 2)
+                ret = sum / self.peakNum
+            self.peakVar = ret
+        return ret
 
     def createDiffDict(self, keyValue, valueValue):
         return {gl.DIFF_KEY: keyValue, gl.DIFF_VALUE: valueValue}
@@ -78,6 +113,10 @@ class DealWithData(object):
             self.isDirectionUp = False
         if not self.isDirectionUp and self.lastStatus and (self.continueUpFormerCount >= 2 or oldValue >= 980):
             self.peakOfWave = oldValue
+            self.saveGpeakArray(oldValue)
+            self.getPeakVar()
+            self.peakAvageArrDisplay.append(self.peakAvage)
+            self.peakVarArrDisplay.append(round(self.peakVar / 10000, 3))
             return True
         elif not self.lastStatus and self.isDirectionUp:
             self.valleyOfWave = oldValue
@@ -135,6 +174,9 @@ if __name__ == '__main__':
     for i in range(len(listCsv)):
         sd = DealWithData(csv=listCsv[i], src=FileUtil.readColum(listCsv[i]))
         sd.onSensorChanged()
+        # print(listCsv[i] + " Avg :" + str(sd.peakAvageArrDisplay))
+        # print(listCsv[i] + " Var :" + str(sd.peakVarArrDisplay))
+        FileUtil.saveVd2Csv(sd.peakAvageArrDisplay, sd.peakVarArrDisplay, listCsv[i])
         listSummary.append(
             {gl.SK_File: listCsv[i].split('.')[0], gl.SK_A: FileUtil.getActualStep(listCsv[i]), gl.SK_C: sd.step})
     FileUtil.saveSummary(listSummary)

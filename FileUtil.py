@@ -68,6 +68,10 @@ def addSd2Csv(dicList, csv):
     df = pd.DataFrame(data, columns=['G', 'T', 'D', 'S'])
     df.to_csv(gl.G_DIR_PATH + csv, index=False, sep=',')
 
+def saveVd2Csv(peakAvgList, pealVarList , csv):
+    df = pd.DataFrame({'AVG': peakAvgList, 'Var': pealVarList})
+    df.to_csv(gl.V_DIR_PATH + csv, index=False, sep=',')
+
 
 def saveSummary(data):
     path = gl.G_DIR_PATH + gl.SUMMARY_CSV
