@@ -18,11 +18,15 @@ with open(dir + cvsname, newline='') as f:
 
 x = np.linspace(0, 40 * len(columnG), len(columnG))
 plt.scatter(x, columnG, c='r', marker='.')
-plt.plot(x, columnG, color='r', linewidth=0.5, linestyle='-', label='G')
+plt.plot(x, columnG, color='r', linewidth=0.5, linestyle='-', label='G-Axis')
 plt.scatter(x, columnT, c='k', marker='.')
-plt.plot(x, columnT, color='k', linewidth=0.5, linestyle='-', label='T')
-plt.scatter(x, columnD, facecolor='m', edgecolor='white',label='D')
-plt.scatter(x, columnS, facecolor='b', edgecolor='white',label='S')
+plt.plot(x, columnT, color='k', linewidth=0.5, linestyle='-', label='Threshold')
+plt.scatter(x, columnD, facecolor='m', edgecolor='white', label='DiffPeakAndValley')
+countS = 0
+for i in range(len(columnS)):
+    if columnS[i] > 0:
+        countS += 1
+plt.scatter(x, columnS, facecolor='b', edgecolor='white', label='CalculateStep' + str(countS))
 
 plt.legend(loc='upper left')
 plt.subplots_adjust(left=0.02, right=0.99, top=0.95, bottom=0.1)
