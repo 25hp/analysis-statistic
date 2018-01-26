@@ -5,7 +5,6 @@ import Global_List as gl
 
 
 # TODO:画出peak - valley 的图
-
 class DealWithData(object):
     def __init__(self, csv="", src=[]):
         self.Src = src

@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 dir = "g-data/"
-cvsname = "xy_slow127.csv"
+cvsname = "sx_ride0.csv"
 columnG = []
 columnT = []
 columnD = []
